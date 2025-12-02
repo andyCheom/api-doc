@@ -22,11 +22,6 @@ Content-Type: application/json
 
 ### Request Body Parameters
 
-#### 필수 파라미터
-
-| 파라미터 | 타입 | 설명 | 예시 |
-|---------|------|------|------|
-| `api_key` | String | API 인증 키 | `"8f4b2e1c9d3a5f70821e6c4b9a3d5f2e8c1b7a9d0f3e2c5b8a1d4f6e9c0b3a2d"` |
 
 #### 주소록 생성 파라미터 (선택)
 
@@ -49,7 +44,7 @@ Content-Type: application/json
 
 | 파라미터 | 타입 | 필수 여부 | 설명                                                   | 예시                                     |
 |---------|------|--------|------------------------------------------------------|----------------------------------------|
-| `api_key` | String | 필수 | 인증 api key                                           | `"dfd6fd9fsdfbjdnfkd38fndjfd023"`                           |
+| `api_key` | String | 필수 | API 인증 키                                          | `"8f4b2e1c9d3a5f70821e6c4b9a3d5f2e8c1b7a9d0f3e2c5b8a1d4f6e9c0b3a2d"`                           |
 | `template_id` | Integer | 필수 | 연동 발송할 메일의 템플릿 key                                   | `1`                                    |
 | `subject` | String | 선택 | 메일 제목                                                | `"2025년 1월 뉴스레터"`                      |
 | `sender` | String | 선택 | 발신자 이메일 주소                                           | `"newsletter@company.com"`             |
