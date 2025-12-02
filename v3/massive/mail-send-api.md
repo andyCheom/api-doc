@@ -26,7 +26,7 @@ Content-Type: application/json
 
 | 파라미터 | 타입 | 설명 | 예시 |
 |---------|------|------|------|
-| `api_key` | String | API 인증 키 | `"e059a55b2fd0e4da7fa0fc632cd6263ab26f06784dec15bb14476e05b9b0f255"` |
+| `api_key` | String | API 인증 키 | `"8f4b2e1c9d3a5f70821e6c4b9a3d5f2e8c1b7a9d0f3e2c5b8a1d4f6e9c0b3a2d"` |
 
 #### 주소록 생성 파라미터 (선택)
 
