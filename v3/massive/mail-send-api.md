@@ -5,11 +5,10 @@ MassiveV3 API는 주소록 생성과 대량 메일 발송을 하나의 요청으
 
 ## 기본 정보
 
-- **Base URL**: `/api/massive/v3`
-- **Endpoint**: `/json-send`
+- **Base URL**: 안내받으신 자동메일 서버의 도메인
+- **Endpoint**: `/api/massive/v3/json-send`
 - **Method**: `POST`
 - **Content-Type**: `application/json`
-- **action URL**:  안내받으신 자동메일 서버의 도메인
 - **인증 방식**: api_key
 
 ---
