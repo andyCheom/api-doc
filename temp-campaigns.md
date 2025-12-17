@@ -254,15 +254,11 @@ POST /api/v3/campaigns/{id}/stats
   "id": 12345,
   "name": "신년 프로모션 캠페인",
   "writer": "홍길동",
-  "campaign_type": "massive",
-  "ip_type": "shared",
   "status": "completed",
   "created_at": "2025-01-15 10:30:00",
   "helo_domain_id": 10,
   "helo_domain_api": "mail.example.com",
   "retry_count": 3,
-  "retry_max": 5,
-  "thread_count": 10,
   "mail_info": {
     "subject": "신년 특별 할인 안내",
     "sender": "noreply@example.com",
@@ -283,7 +279,7 @@ POST /api/v3/campaigns/{id}/stats
     "open_rate": 45.69,
     "click_rate": 12.18
   },
-  "targets": [
+  "contacts": [
     {
       "name": "VIP 고객 리스트",
       "count": 5000
@@ -302,8 +298,6 @@ POST /api/v3/campaigns/{id}/stats
 - `id` - 캠페인 고유 ID
 - `name` - 캠페인 이름
 - `writer` - 작성자 이름
-- `campaign_type` - 캠페인 타입 (massive, stepmail, automail)
-- `ip_type` - IP 타입 (shared, dedicated)
 - `status` - 현재 상태 (draft, scheduled, sending, completed, paused, failed)
 - `created_at` - 생성 일시
 
@@ -311,8 +305,6 @@ POST /api/v3/campaigns/{id}/stats
 - `helo_domain_id` - HELO 도메인 ID
 - `helo_domain_api` - HELO 도메인 주소
 - `retry_count` - 현재 재시도 횟수
-- `retry_max` - 최대 재시도 횟수
-- `thread_count` - 발송 스레드 수
 
 ✉️ **메일 정보** (`mail_info` 객체):
 - `subject` - 메일 제목
@@ -334,7 +326,7 @@ POST /api/v3/campaigns/{id}/stats
 - `open_rate` - 오픈률 (%)
 - `click_rate` - 클릭률 (%)
 
-🎯 **주소록 정보** (`targets` 배열):
+🎯 **주소록 정보** (`contacts` 배열):
 - `name` - 주소록 이름
 - `count` - 주소록 내 수신자 수
 
@@ -380,7 +372,7 @@ POST /api/v3/campaigns/{id}/recipients
 
 ```json
 {
-  "type": "delivered",
+  "status": "delivered",
   "limit": 100,
   "offset": 0
 }
@@ -388,7 +380,7 @@ POST /api/v3/campaigns/{id}/recipients
 
 **필드 설명**:
 
-- `type` (String, 선택)
+- `status` (String, 선택)
   - 수신자 타입 필터
   - 가능한 값: `sent`, `delivered`, `failed`, `opened`, `clicked`
   - 기본값: `sent` (전체 발송 대상자)
@@ -417,7 +409,7 @@ POST /api/v3/campaigns/{id}/recipients
 ```json
 {
   "campaign_id": 12345,
-  "type": "delivered",
+  "status": "delivered",
   "total": 9850,
   "offset": 0,
   "limit": 100,
@@ -450,7 +442,7 @@ POST /api/v3/campaigns/{id}/recipients
 
 📊 **최상위 필드**:
 - `campaign_id` - 캠페인 ID
-- `type` - 조회한 수신자 타입 (sent, delivered, failed, opened, clicked)
+- `status` - 조회한 수신자 타입 (sent, delivered, failed, opened, clicked)
 - `total` - 해당 타입의 전체 수신자 수
 - `offset` - 현재 페이지 시작 위치
 - `limit` - 페이지당 조회 수
@@ -501,7 +493,7 @@ curl -X POST "http://example.com/api/v3/campaigns/12345/recipients" \
   -H "Content-Type: application/json" \
   -H "X-API-KEY: your_api_key_here" \
   -d '{
-    "type": "failed",
+    "status": "failed",
     "limit": 50,
     "offset": 0
   }'
@@ -514,7 +506,7 @@ curl -X POST "http://example.com/api/v3/campaigns/12345/recipients" \
   -H "Content-Type: application/json" \
   -H "X-API-KEY: your_api_key_here" \
   -d '{
-    "type": "opened"
+    "status": "opened"
   }'
 ```
 
