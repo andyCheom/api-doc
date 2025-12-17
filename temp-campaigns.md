@@ -256,8 +256,6 @@ POST /api/v3/campaigns/{id}/stats
   "writer": "홍길동",
   "status": "completed",
   "created_at": "2025-01-15 10:30:00",
-  "helo_domain_id": 10,
-  "helo_domain_api": "mail.example.com",
   "retry_count": 3,
   "mail_info": {
     "subject": "신년 특별 할인 안내",
@@ -302,8 +300,6 @@ POST /api/v3/campaigns/{id}/stats
 - `created_at` - 생성 일시
 
 ⚙️ **발송 설정**:
-- `helo_domain_id` - HELO 도메인 ID
-- `helo_domain_api` - HELO 도메인 주소
 - `retry_count` - 현재 재시도 횟수
 
 ✉️ **메일 정보** (`mail_info` 객체):
