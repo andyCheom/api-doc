@@ -1,358 +1,740 @@
-# 대량메일 캠페인 검색 API 명세서
+주소록 삭제
+/api/v3/contacts/delete
+-----------
+# Campaign API v3 명세서
 
-## API 개요
+## 📋 개요
 
-대량메일 캠페인을 검색하는 API입니다. 다양한 조건(이름, 상태, 작성자, 날짜 등)으로 캠페인을 검색하고 페이징된 결과를 반환합니다.
+대량메일 캠페인 조회 및 통계 정보를 제공하는 RESTful API입니다.
 
----
-
-## 엔드포인트 정보
-
-### 캠페인 검색
-
-```
-POST /api/massive/v3/campaigns
-```
-
-**설명:** 대량메일 캠페인 목록을 검색 조건에 따라 조회합니다.
+- **Base URL**: `/api/v3/campaigns`
+- **API Version**: v3
+- **문서 버전**: 1.0.0
 
 ---
 
-## 요청 (Request)
+## 🔐 인증
 
-### Headers
+모든 API 요청은 HTTP 헤더에 API Key를 포함해야 합니다.
 
-| 이름 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| X-API-KEY | String | O | API 인증 키 |
-| Content-Type | String | O | `application/json` |
-
-### Query Parameters
-
-| 이름 | 타입 | 필수 | 기본값 | 제약조건 | 설명 |
-|------|------|------|--------|----------|------|
-| limit | Integer | X | 10 | 0-1000 | 한 페이지당 조회할 캠페인 수 |
-| offset | Integer | X | 0 | 0 이상 | 건너뛸 캠페인 수 (페이징 시작 위치) |
-
-### Request Body
-
-**Content-Type:** `application/json`
-
-**필수 여부:** 선택 (빈 JSON `{}` 또는 body 없이 요청 가능)
-
-#### 필드 정의
-
-| 필드명 | 타입 | 필수 | 설명                      | 예시 |
-|--------|------|------|-------------------------|------|
-| name | String | X | 캠페인 이름 (부분 일치 검색)       | "테스트 캠페인" |
-| status | Array[String] | X | 캠페인 상태 목록               | ["RESERVED", "PAUSED"] |
-| writer | String | X | 캠페인 작성자 이름              | "admin" |
-| created_at_start | String | X | 캠페인 생성일 시작 (yyyy-MM-dd) | "2024-01-01" |
-| created_at_end | String | X | 캠페인 생성일 종료 (yyyy-MM-dd) | "2024-12-31" |
-| campaign_group_id | Integer | X | 캠페인 그룹 ID               | 1 |
-
-#### 캠페인 상태 (status) 값
-
-| 값 | 설명 |
-|----|------|
-| RESERVED | 예약됨 |
-| PAUSED | 일시중지 |
-| COMPLETED | 완료 |
-| READY | 준비 |
-| STANDBY | 대기 |
-| RESEND | 재발송 |
-| COLLECTING_RESULTS | 결과 수집 중 |
-| COLLECTION_COMPLETED | 수집 완료 |
-| UPDATING_STATISTICS | 통계 업데이트 중 |
-
-#### Request Body 예시
-
-**1. 빈 요청 (모든 캠페인 조회)**
-```json
-{}
+**필수 헤더**:
+```
+X-API-KEY: {your_api_key}
 ```
 
-**2. 이름으로 검색**
+### 인증 실패 응답
+
+**API Key 누락 시** (`400 Bad Request`):
 ```json
 {
-  "name": "테스트 캠페인"
+  "status": 400,
+  "code": "A004",
+  "message": "API 키가 입력되지 않았습니다."
 }
 ```
 
-**3. 상태로 검색**
+**잘못된 API Key** (`401 Unauthorized`):
 ```json
 {
-  "status": ["RESERVED", "PAUSED"]
-}
-```
-
-**4. 복합 검색**
-```json
-{
-  "name": "캠페인",
-  "status": ["RESERVED", "READY"],
-  "writer": "admin",
-  "created_at_start": "2024-01-01",
-  "created_at_end": "2024-12-31",
-  "campaign_group_id": 1
+  "status": 401,
+  "code": "A003",
+  "message": "유효하지 않은 API 키입니다."
 }
 ```
 
 ---
 
-## 응답 (Response)
+## 📡 API 엔드포인트
 
-### 성공 응답
+### 1️⃣ 캠페인 검색
 
-**HTTP Status:** `200 OK`
+캠페인 목록을 검색 조건에 따라 조회합니다.
 
-**Content-Type:** `application/json`
+#### 요청 정보
 
-#### Response Body 구조
+```
+POST /api/v3/campaigns/search
+```
 
-| 필드명 | 타입 | 설명 |
-|--------|------|------|
-| total | Integer | 검색 조건에 맞는 전체 캠페인 수 |
-| offset | Integer | 현재 페이지 오프셋 |
-| limit | Integer | 페이지당 항목 수 |
-| campaigns | Array[CampaignInfo] | 캠페인 정보 배열 |
+**필수 헤더**:
+- `Content-Type: application/json`
+- `X-API-KEY: {your_api_key}`
 
-#### CampaignInfo 구조
+**쿼리 파라미터** (선택사항):
 
-| 필드명 | 타입 | 설명 |
-|--------|------|------|
-| id | Integer | 캠페인 ID |
-| name | String | 캠페인 이름 |
-| status | String | 캠페인 상태 |
-| writer | String | 작성자 |
-| created_at | String | 생성일시 (ISO 8601 형식) |
-| target_name | String | 주소록 이름 |
-| send_at | String | 발송일시 (ISO 8601 형식) |
-| total_count | Integer | 전체 발송 수 |
-| success_count | Integer | 성공 발송 수 |
-| fail_count | Integer | 실패 발송 수 |
+- `limit` (Integer)
+  - 설명: 페이지당 조회할 캠페인 수
+  - 기본값: 20
+  - 최대값: 100
 
-#### 성공 응답 예시
+- `offset` (Integer)
+  - 설명: 조회 시작 위치
+  - 기본값: 0
+
+**요청 본문** (선택사항):
 
 ```json
 {
-  "total": 25,
+  "title": "프로모션",
+  "status": ["draft", "scheduled", "sending", "completed"],
+  "created_by": "홍길동",
+  "created_at_start": "202501010000",
+  "created_at_end": "202512312359",
+  "group_id": 10
+}
+```
+
+**필드 설명**:
+
+- `title` (String, 선택)
+  - 캠페인 제목으로 검색 (부분 일치)
+
+- `status` (Array[String], 선택)
+  - 캠페인 상태 필터
+  - 가능한 값: `draft`, `scheduled`, `sending`, `completed`, `paused`, `failed`
+
+- `created_by` (String, 선택)
+  - 작성자 이름으로 검색
+
+- `created_at_start` (String, 선택)
+  - 검색 시작 일시 (형식: yyyyMMddHHmm)
+  - 예: `202501010000` (2025년 1월 1일 00:00)
+
+- `created_at_end` (String, 선택)
+  - 검색 종료 일시 (형식: yyyyMMddHHmm)
+  - 예: `202512312359` (2025년 12월 31일 23:59)
+
+- `group_id` (Integer, 선택)
+  - 캠페인 그룹 ID
+
+#### 상태 값 설명
+
+캠페인 상태는 다음 6가지 값으로 표준화되어 있습니다:
+
+- **`draft`** - 작성 중
+  - 아직 발송 준비가 안 된 상태
+  - DB 상태 코드: `0`, `1`
+
+- **`scheduled`** - 발송 대기
+  - 발송 예약되어 대기 중이거나 승인 대기 상태
+  - DB 상태 코드: `2`, `8`, `10`, `11`
+
+- **`sending`** - 발송 중
+  - 실제 발송이 진행 중이거나 큐에서 처리 중
+  - DB 상태 코드: `3`, `14`, `30`, `31`, `32`, `33`, `50`, `51`, `52`
+
+- **`completed`** - 발송 완료
+  - 모든 발송이 정상적으로 완료됨
+  - DB 상태 코드: `7`
+
+- **`paused`** - 일시 정지
+  - 발송이 일시 중지되거나 연기된 상태
+  - DB 상태 코드: `4`, `5`, `6`, `53`, `54`, `55`, `56`
+
+- **`failed`** - 오류 발생
+  - 발송 중 에러가 발생한 상태
+  - DB 상태 코드: `9`
+
+**참고**:
+- API는 간소화된 6가지 상태를 사용하지만, 내부적으로는 50개 이상의 상세 상태 코드로 관리됩니다
+- 여러 DB 상태 코드가 하나의 API 상태로 매핑됩니다
+
+#### 응답 정보
+
+**성공 응답** (`200 OK`):
+
+```json
+{
+  "total": 150,
   "offset": 0,
-  "limit": 10,
-  "campaigns": [
+  "limit": 20,
+  "result": [
     {
-      "id": 123,
-      "name": "2024 신년 이벤트 캠페인",
-      "status": "COMPLETED",
-      "writer": "admin",
-      "created_at": "2024-01-05T09:30:00.000Z",
-      "target_name": "VIP 고객 리스트",
-      "send_at": "2024-01-10T10:00:00.000Z",
-      "total_count": 1000,
-      "success_count": 980,
-      "fail_count": 20
-    },
-    {
-      "id": 124,
-      "name": "주간 뉴스레터",
-      "status": "RESERVED",
-      "writer": "admin",
-      "created_at": "2024-01-08T14:20:00.000Z",
-      "target_name": "전체 구독자",
-      "send_at": "2024-01-15T09:00:00.000Z",
-      "total_count": 5000,
-      "success_count": 0,
-      "fail_count": 0
+      "id": 12345,
+      "name": "신년 프로모션 캠페인",
+      "status": "completed",
+      "created_by": "홍길동",
+      "contact_name": "VIP 고객 리스트",
+      "created_at": "2025-01-15 10:30:00",
+      "send_at": "2025-01-20 09:00:00",
+      "stats": {
+        "sent": 10000,
+        "delivered": 9850,
+        "failed": 150
+      }
     }
   ]
 }
 ```
 
----
+**응답 필드 설명**:
 
-### 에러 응답
+📊 **최상위 필드**:
+- `total` - 검색 조건에 맞는 전체 캠페인 수
+- `offset` - 현재 페이지 시작 위치
+- `limit` - 페이지당 조회 수
+- `result` - 캠페인 목록 배열
 
-**Content-Type:** `application/json`
+📧 **캠페인 정보** (`result` 배열의 각 항목):
+- `id` - 캠페인 고유 ID
+- `name` - 캠페인 이름
+- `status` - 캠페인 현재 상태
+- `created_by` - 작성자 이름
+- `contact_name` - 주소록(연락처) 이름
+- `created_at` - 생성 일시 (형식: yyyy-MM-dd HH:mm:ss)
+- `send_at` - 발송 일시 (형식: yyyy-MM-dd HH:mm:ss)
+- `stats` - 발송 통계 객체
 
-#### 에러 응답 구조
+📈 **통계 정보** (`stats` 객체):
+- `sent` - 발송 요청 수
+- `delivered` - 성공 전달 수
+- `failed` - 발송 실패 수
 
-| 필드명 | 타입 | 설명 |
-|--------|------|------|
-| code | String | 에러 코드 |
-| httpStatusCode | Integer | HTTP 상태 코드 |
-| message | String | 에러 메시지 |
+#### 사용 예제
 
-#### 에러 케이스
-
-**1. API Key 누락**
-
-**HTTP Status:** `400 Bad Request`
-
-```json
-{
-  "code": "A004",
-  "httpStatusCode": 400,
-  "message": "API 키가 입력되지 않았습니다."
-}
-```
-
-**2. 유효하지 않은 API Key**
-
-**HTTP Status:** `401 Unauthorized`
-
-```json
-{
-  "code": "A003",
-  "httpStatusCode": 401,
-  "message": "유효하지 않은 API 키입니다."
-}
-```
-
-**3. 파라미터 유효성 검증 실패 (limit 범위 초과)**
-
-**HTTP Status:** `400 Bad Request`
-
-```json
-{
-  "code": "C001",
-  "httpStatusCode": 400,
-  "message": "searchCampaigns.limit: 1000 이하여야 합니다"
-}
-```
-
-**4. 서버 내부 오류**
-
-**HTTP Status:** `500 Internal Server Error`
-
-```json
-{
-  "code": "C003",
-  "httpStatusCode": 500,
-  "message": "서버 내부 오류가 발생했습니다."
-}
-```
-
----
-
-## 사용 예시
-
-### cURL
+**예제 1: 전체 캠페인 조회**
 
 ```bash
-# 기본 조회 (모든 캠페인)
-curl -X POST "http://localhost:8080/api/massive/v3/campaigns" \
-  -H "X-API-KEY: your-api-key-here" \
+curl -X POST "http://example.com/api/v3/campaigns/search?limit=20&offset=0" \
   -H "Content-Type: application/json" \
-  -d '{}'
+  -H "X-API-KEY: your_api_key_here"
+```
 
-# 상태로 필터링
-curl -X POST "http://localhost:8080/api/massive/v3/campaigns?limit=20&offset=0" \
-  -H "X-API-KEY: your-api-key-here" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "status": ["RESERVED", "PAUSED"]
-  }'
+**예제 2: 완료된 캠페인만 조회**
 
-# 복합 검색
-curl -X POST "http://localhost:8080/api/massive/v3/campaigns?limit=50&offset=0" \
-  -H "X-API-KEY: your-api-key-here" \
+```bash
+curl -X POST "http://example.com/api/v3/campaigns/search?limit=10" \
   -H "Content-Type: application/json" \
+  -H "X-API-KEY: your_api_key_here" \
   -d '{
-    "name": "캠페인",
-    "status": ["COMPLETED"],
-    "created_at_start": "2024-01-01",
-    "created_at_end": "2024-12-31"
+    "status": ["completed"],
+    "created_at_start": "202501010000",
+    "created_at_end": "202501312359"
   }'
 ```
 
-### JavaScript (Fetch API)
+**예제 3: 특정 작성자의 캠페인 검색**
 
-```javascript
-const searchCampaigns = async () => {
-  const response = await fetch('http://localhost:8080/api/massive/v3/campaigns?limit=10&offset=0', {
-    method: 'POST',
-    headers: {
-      'X-API-KEY': 'your-api-key-here',
-      'Content-Type': 'application/json'
+```bash
+curl -X POST "http://example.com/api/v3/campaigns/search" \
+  -H "Content-Type: application/json" \
+  -H "X-API-KEY: your_api_key_here" \
+  -d '{
+    "title": "프로모션",
+    "created_by": "홍길동"
+  }'
+```
+
+---
+
+### 2️⃣ 캠페인 통계 조회
+
+특정 캠페인의 상세 통계 및 설정 정보를 조회합니다.
+
+#### 요청 정보
+
+```
+POST /api/v3/campaigns/{id}/stats
+```
+
+**필수 헤더**:
+- `X-API-KEY: {your_api_key}`
+
+**경로 파라미터**:
+
+- `id` (Integer, 필수)
+  - 조회할 캠페인의 고유 ID
+
+#### 응답 정보
+
+**성공 응답** (`200 OK`):
+
+```json
+{
+  "id": 12345,
+  "name": "신년 프로모션 캠페인",
+  "writer": "홍길동",
+  "campaign_type": "massive",
+  "ip_type": "shared",
+  "status": "completed",
+  "created_at": "2025-01-15 10:30:00",
+  "helo_domain_id": 10,
+  "helo_domain_api": "mail.example.com",
+  "retry_count": 3,
+  "retry_max": 5,
+  "thread_count": 10,
+  "mail_info": {
+    "subject": "신년 특별 할인 안내",
+    "sender": "noreply@example.com",
+    "sender_name": "Example 마케팅팀",
+    "send_start_at": "2025-01-20 09:00:00",
+    "send_end_at": "2025-01-20 12:30:00",
+    "resend_end_at": "2025-01-21 09:00:00",
+    "mail_size_kb": 125.5
+  },
+  "stats": {
+    "sent": 10000,
+    "delivered": 9850,
+    "failed": 150,
+    "opens": 4500,
+    "clicks": 1200,
+    "delivery_rate": 98.5,
+    "failure_rate": 1.5,
+    "open_rate": 45.69,
+    "click_rate": 12.18
+  },
+  "targets": [
+    {
+      "name": "VIP 고객 리스트",
+      "count": 5000
     },
-    body: JSON.stringify({
-      status: ['RESERVED', 'PAUSED'],
-      created_at_start: '2024-01-01',
-      created_at_end: '2024-12-31'
-    })
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    console.error('Error:', error);
-    return;
-  }
-
-  const data = await response.json();
-  console.log('Total campaigns:', data.total);
-  console.log('Campaigns:', data.campaigns);
-};
-
-searchCampaigns();
+    {
+      "name": "일반 회원 리스트",
+      "count": 5000
+    }
+  ]
+}
 ```
 
-### Python (requests)
+**응답 필드 설명**:
 
-```python
-import requests
+📧 **캠페인 기본 정보**:
+- `id` - 캠페인 고유 ID
+- `name` - 캠페인 이름
+- `writer` - 작성자 이름
+- `campaign_type` - 캠페인 타입 (massive, stepmail, automail)
+- `ip_type` - IP 타입 (shared, dedicated)
+- `status` - 현재 상태 (draft, scheduled, sending, completed, paused, failed)
+- `created_at` - 생성 일시
 
-url = "http://localhost:8080/api/massive/v3/campaigns"
-headers = {
-    "X-API-KEY": "your-api-key-here",
-    "Content-Type": "application/json"
+⚙️ **발송 설정**:
+- `helo_domain_id` - HELO 도메인 ID
+- `helo_domain_api` - HELO 도메인 주소
+- `retry_count` - 현재 재시도 횟수
+- `retry_max` - 최대 재시도 횟수
+- `thread_count` - 발송 스레드 수
+
+✉️ **메일 정보** (`mail_info` 객체):
+- `subject` - 메일 제목
+- `sender` - 발신자 이메일
+- `sender_name` - 발신자 이름
+- `send_start_at` - 발송 시작 일시
+- `send_end_at` - 발송 종료 일시
+- `resend_end_at` - 재발송 종료 일시
+- `mail_size_kb` - 메일 크기 (KB)
+
+📊 **통계 정보** (`stats` 객체):
+- `sent` - 총 발송 시도 수
+- `delivered` - 성공 전달 수
+- `failed` - 발송 실패 수
+- `opens` - 오픈 수
+- `clicks` - 클릭 수
+- `delivery_rate` - 전달률 (%)
+- `failure_rate` - 실패율 (%)
+- `open_rate` - 오픈률 (%)
+- `click_rate` - 클릭률 (%)
+
+🎯 **주소록 정보** (`targets` 배열):
+- `name` - 주소록 이름
+- `count` - 주소록 내 수신자 수
+
+**에러 응답** (`404 Not Found`):
+
+```json
+{
+  "status": 404,
+  "code": "M001",
+  "message": "캠페인을 찾을 수 없습니다."
 }
-params = {
-    "limit": 10,
+```
+
+#### 사용 예제
+
+```bash
+curl -X POST "http://example.com/api/v3/campaigns/12345/stats" \
+  -H "X-API-KEY: your_api_key_here"
+```
+
+---
+
+### 3️⃣ 캠페인 수신자 목록 조회
+
+특정 캠페인의 수신자 목록과 발송 상태를 조회합니다.
+
+#### 요청 정보
+
+```
+POST /api/v3/campaigns/{id}/recipients
+```
+
+**필수 헤더**:
+- `Content-Type: application/json`
+- `X-API-KEY: {your_api_key}`
+
+**경로 파라미터**:
+
+- `id` (Integer, 필수)
+  - 조회할 캠페인의 고유 ID
+
+**요청 본문** (선택사항):
+
+```json
+{
+  "type": "delivered",
+  "limit": 100,
+  "offset": 0
+}
+```
+
+**필드 설명**:
+
+- `type` (String, 선택)
+  - 수신자 타입 필터
+  - 가능한 값: `sent`, `delivered`, `failed`, `opened`, `clicked`
+  - 기본값: `sent` (전체 발송 대상자)
+
+- `limit` (Integer, 선택)
+  - 페이지당 조회할 수신자 수
+  - 기본값: 100
+  - 최대값: 1000
+
+- `offset` (Integer, 선택)
+  - 조회 시작 위치
+  - 기본값: 0
+
+#### 수신자 타입 설명
+
+- `sent` - 전체 발송 대상자 (기본값)
+- `delivered` - 성공 대상자
+- `failed` - 실패 대상자
+- `opened` - 오픈 대상자
+- `clicked` - 클릭 대상자
+
+#### 응답 정보
+
+**성공 응답** (`200 OK`):
+
+```json
+{
+  "campaign_id": 12345,
+  "type": "delivered",
+  "total": 9850,
+  "offset": 0,
+  "limit": 100,
+  "result": [
+    {
+      "email": "customer1@example.com",
+      "name": "홍길동",
+      "sent_at": "2025-01-20 09:05:23",
+      "delivered_at": "2025-01-20 09:05:45",
+      "opened_at": "2025-01-20 10:30:15",
+      "clicked_at": "",
+      "field1": "value1",
+      "field2": "value2"
+    },
+    {
+      "email": "customer2@example.com",
+      "name": "김철수",
+      "sent_at": "2025-01-20 09:05:26",
+      "delivered_at": "2025-01-20 09:05:48",
+      "opened_at": "",
+      "clicked_at": "",
+      "field1": "value3",
+      "field2": "value4"
+    }
+  ]
+}
+```
+
+**응답 필드 설명**:
+
+📊 **최상위 필드**:
+- `campaign_id` - 캠페인 ID
+- `type` - 조회한 수신자 타입 (sent, delivered, failed, opened, clicked)
+- `total` - 해당 타입의 전체 수신자 수
+- `offset` - 현재 페이지 시작 위치
+- `limit` - 페이지당 조회 수
+- `result` - 수신자 목록 배열 (동적 필드 포함)
+
+👤 **수신자 정보** (`result` 배열의 각 항목):
+
+기본 필드 (항상 포함):
+- `email` - 수신자 이메일
+- `name` - 수신자 이름
+- `sent_at` - 발송 시각 (형식: yyyy-MM-dd HH:mm:ss, 빈 문자열 가능)
+- `delivered_at` - 전달 시각 (형식: yyyy-MM-dd HH:mm:ss, 빈 문자열 가능)
+- `opened_at` - 오픈 시각 (형식: yyyy-MM-dd HH:mm:ss, 빈 문자열 가능)
+- `clicked_at` - 클릭 시각 (형식: yyyy-MM-dd HH:mm:ss, 빈 문자열 가능)
+
+동적 필드 (주소록에 따라 다름):
+- 주소록에 정의된 사용자 정의 필드들이 추가로 포함됩니다
+- 예: `field1`, `field2`, `company`, `position` 등
+
+**참고**:
+- `result` 배열의 각 항목은 Map 형태로 반환되어 동적 필드를 지원합니다
+- 시간 필드가 없는 경우 빈 문자열(`""`)로 반환됩니다
+
+**에러 응답** (`404 Not Found`):
+
+```json
+{
+  "status": 404,
+  "code": "M001",
+  "message": "캠페인을 찾을 수 없습니다."
+}
+```
+
+#### 사용 예제
+
+**예제 1: 전체 수신자 조회**
+
+```bash
+curl -X POST "http://example.com/api/v3/campaigns/12345/recipients" \
+  -H "Content-Type: application/json" \
+  -H "X-API-KEY: your_api_key_here"
+```
+
+**예제 2: 실패한 수신자만 조회**
+
+```bash
+curl -X POST "http://example.com/api/v3/campaigns/12345/recipients" \
+  -H "Content-Type: application/json" \
+  -H "X-API-KEY: your_api_key_here" \
+  -d '{
+    "type": "failed",
+    "limit": 50,
     "offset": 0
-}
-payload = {
-    "status": ["RESERVED", "PAUSED"],
-    "created_at_start": "2024-01-01",
-    "created_at_end": "2024-12-31"
-}
+  }'
+```
 
-response = requests.post(url, headers=headers, params=params, json=payload)
+**예제 3: 오픈한 수신자 조회**
 
-if response.status_code == 200:
-    data = response.json()
-    print(f"Total campaigns: {data['total']}")
-    print(f"Campaigns: {data['campaigns']}")
-else:
-    error = response.json()
-    print(f"Error: {error['message']}")
+```bash
+curl -X POST "http://example.com/api/v3/campaigns/12345/recipients" \
+  -H "Content-Type: application/json" \
+  -H "X-API-KEY: your_api_key_here" \
+  -d '{
+    "type": "opened"
+  }'
 ```
 
 ---
 
-## 참고사항
+## ⚠️ 에러 코드
 
-### 검색 기간 기본값
+### 공통 에러 코드 목록
 
-검색 조건에서 `created_at_start`를 지정하지 않으면 **최근 1개월** 데이터를 기본으로 조회합니다.
+**400 - Bad Request**
+- `C001` - 입력값이 올바르지 않습니다
+- `A004` - API 키가 입력되지 않았습니다
 
-### 페이징
+**401 - Unauthorized**
+- `A003` - 유효하지 않은 API 키입니다
 
-- `offset`과 `limit`을 사용하여 페이징을 구현할 수 있습니다
-- 예시:
-  - 1페이지: `offset=0, limit=10`
-  - 2페이지: `offset=10, limit=10`
-  - 3페이지: `offset=20, limit=10`
+**403 - Forbidden**
+- `C004` - 접근이 거부되었습니다
 
-### 성능 고려사항
+**404 - Not Found**
+- `M001` - 캠페인을 찾을 수 없습니다
 
-- `limit`의 최대값은 1000입니다
-- 대량의 데이터를 조회할 때는 적절한 `limit` 값을 사용하여 페이징 처리를 권장합니다
-- 검색 조건을 구체적으로 지정하면 더 빠른 응답을 받을 수 있습니다
+**405 - Method Not Allowed**
+- `C002` - 허용되지 않은 HTTP 메서드입니다
+
+**500 - Internal Server Error**
+- `C003` - 서버 내부 오류가 발생했습니다
+
+### 에러 응답 형식
+
+모든 에러는 다음 형식으로 반환됩니다:
+
+```json
+{
+  "status": 400,
+  "code": "C001",
+  "message": "입력값이 올바르지 않습니다.",
+  "errors": [
+    {
+      "field": "status",
+      "message": "입력값 'invalid'은(는) 허용되지 않습니다. 허용된 값: [draft, scheduled, sending, completed, paused, failed]"
+    }
+  ]
+}
+```
+
+**필드 설명**:
+- `status` - HTTP 상태 코드
+- `code` - 애플리케이션 에러 코드
+- `message` - 에러 메시지
+- `errors` - 필드별 상세 에러 (검증 실패 시에만 포함)
 
 ---
 
-## 버전 정보
+## 📄 페이지네이션
 
-- **API Version:** v3
-- **Last Updated:** 2024-12-12
-- **Base URL:** `/api/massive/v3/campaigns`
+리스트 조회 API는 페이지네이션을 지원합니다.
+
+**파라미터**:
+- `limit` - 페이지당 항목 수
+  - 기본값: 20
+  - 최대값: 100 (캠페인 검색), 1000 (수신자 조회)
+
+- `offset` - 시작 위치
+  - 기본값: 0
+  - 0부터 시작 (첫 번째 항목 = 0)
+
+**예제**:
+
+```
+# 첫 페이지 (1-20번째 항목)
+?limit=20&offset=0
+
+# 두 번째 페이지 (21-40번째 항목)
+?limit=20&offset=20
+
+# 세 번째 페이지 (41-60번째 항목)
+?limit=20&offset=40
+```
+
+---
+
+## 📅 날짜 형식
+
+### 응답 날짜 형식
+
+모든 날짜/시간 필드는 다음 형식을 사용합니다.
+
+**형식**: `yyyy-MM-dd HH:mm:ss`
+
+**예제**:
+- `2025-01-15 10:30:00`
+- `2025-12-31 23:59:59`
+- `2025-06-01 12:00:00`
+
+**참고**:
+- 시간대는 서버 시간대(Asia/Seoul)를 기준으로 합니다
+- 빈 값은 빈 문자열(`""`) 또는 `null`로 반환될 수 있습니다
+
+### 요청 날짜 형식
+
+요청 시 날짜 필드 (`created_at_start`, `created_at_end`)는 년월일시분 형식을 사용합니다.
+
+**형식**: `yyyyMMddHHmm` (12자리)
+
+**예제**:
+- `202501150900` → 2025년 1월 15일 09:00
+- `202512312359` → 2025년 12월 31일 23:59
+- `202506011200` → 2025년 6월 1일 12:00
+
+**형식 설명**:
+- `yyyy` - 4자리 연도
+- `MM` - 2자리 월 (01-12)
+- `dd` - 2자리 일 (01-31)
+- `HH` - 2자리 시간 (00-23)
+- `mm` - 2자리 분 (00-59)
+
+---
+
+## 📚 부록
+
+### A. 캠페인 상태 코드 상세 매핑
+
+API에서 사용하는 6가지 표준 상태 값과 DB 상태 코드의 상세 매핑표입니다.
+
+#### DRAFT (작성 중)
+
+API 상태 값: `draft`
+
+| DB 코드 | 상태명 | 설명 |
+|---------|--------|------|
+| 0 | STATE_NOTHING_0 | 초기 상태 |
+| 1 | STATE_WRITING_1 | 작성 중 |
+
+#### SCHEDULED (발송 대기)
+
+API 상태 값: `scheduled`
+
+| DB 코드 | 상태명 | 설명 |
+|---------|--------|------|
+| 2 | STATE_RESERVED_2 | 예약됨 |
+| 8 | STATE_READY_8 | 준비 완료 |
+| 10 | STATE_STANDBY_10 | 대기 중 |
+| 11 | STATE_WAITING_APPROVE_11 | 승인 대기 |
+
+#### SENDING (발송 중)
+
+API 상태 값: `sending`
+
+| DB 코드 | 상태명 | 설명 |
+|---------|--------|------|
+| 3 | STATE_SENDING_3 | 발송 중 |
+| 14 | STATE_RESEND_14 | 재발송 중 |
+| 30 | POSTFIX_WAITING_30 | Postfix 대기 중 |
+| 31 | POSTFIX_WAITING_AUTO_RESEND_31 | 자동 재발송 대기 |
+| 32 | POSTFIX_WAITING_RESEND_TO_ERROR_32 | 오류 재발송 대기 |
+| 33 | POSTFIX_SENDING_33 | Postfix 발송 중 |
+| 50 | POSTFIX_FINISHED_SENDING_50 | 발송 종료 (큐 처리 중) |
+| 51 | POSTFIX_FINISHED_ON_QUEUE_51 | 큐 처리 완료 |
+| 52 | POSTFIX_MOVING_FROM_QUEUE_52 | 큐에서 이동 중 |
+
+#### COMPLETED (발송 완료)
+
+API 상태 값: `completed`
+
+| DB 코드 | 상태명 | 설명 |
+|---------|--------|------|
+| 7 | STATE_COMPLETED_7 | 발송 완료 |
+
+#### PAUSED (일시 정지)
+
+API 상태 값: `paused`
+
+| DB 코드 | 상태명 | 설명 |
+|---------|--------|------|
+| 4 | STATE_PAUSED_4 | 일시 정지 |
+| 5 | STATE_STOPPED_5 | 중지됨 |
+| 6 | STATE_POSTPONDED_6 | 연기됨 |
+| 53 | POSTFIX_PAUSED_FROM_QUEUE_53 | 큐에서 일시 정지 |
+| 54 | POSTFIX_MOVING_FROM_PAUSED_54 | 일시 정지에서 이동 중 |
+| 55 | POSTFIX_STOPPED_FROM_QUEUE_55 | 큐에서 중지 |
+| 56 | POSTFIX_MOVING_FROM_STOPPED_56 | 중지에서 이동 중 |
+
+#### FAILED (오류 발생)
+
+API 상태 값: `failed`
+
+| DB 코드 | 상태명 | 설명 |
+|---------|--------|------|
+| 9 | STATE_ERROR_9 | 오류 발생 |
+
+### B. 수신자 타입 상세 설명
+
+API에서 사용하는 수신자 타입 값입니다.
+
+| API 값 | 설명 | 용도 |
+|--------|------|------|
+| `sent` | 전체 발송 대상자 | 발송이 시도된 모든 수신자 (기본값) |
+| `delivered` | 성공 대상자 | 실제로 메일이 전달된 수신자 |
+| `failed` | 실패 대상자 | 발송에 실패한 수신자 |
+| `opened` | 오픈 대상자 | 메일을 열어본 수신자 |
+| `clicked` | 클릭 대상자 | 메일 내 링크를 클릭한 수신자 |
+
+**참고**:
+- `sent` ≥ `delivered` + `failed` (일부는 처리 중일 수 있음)
+- `opened`와 `clicked`는 `delivered` 수신자의 일부
+- 추적 기능이 활성화된 경우에만 `opened`와 `clicked` 데이터 수집 가능
+
+---
+
+## 📞 문의
+
+API 사용 중 문제가 발생하거나 문의 사항이 있으시면 기술 지원팀으로 연락해주시기 바랍니다.
+
+**문서 정보**:
+- 최종 수정일: 2025-12-16
+- 문서 버전: 1.1.0
+- API 버전: v3
+
+**주요 변경 이력**:
+- v1.1.0 (2025-12-16): 실제 DTO 구조에 맞게 필드명 및 응답 형식 수정
+- v1.0.1 (2025-12-16): 캠페인 상태 코드 매핑 정보 추가
+- v1.0.0 (2025-12-16): 초기 문서 작성
