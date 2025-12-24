@@ -15,7 +15,7 @@
 
 ## 🔐 인증
 
-모든 API 요청은 HTTP 헤더에 API Key를 포함해야 합니다.
+모든 API 요청은 https 헤더에 API Key를 포함해야 합니다.
 
 **필수 헤더**:
 ```
@@ -60,21 +60,13 @@ POST /api/v3/campaigns/search
 - `Content-Type: application/json`
 - `X-API-KEY: {your_api_key}`
 
-**쿼리 파라미터** (선택사항):
-
-- `limit` (Integer)
-  - 설명: 페이지당 조회할 캠페인 수
-  - 기본값: 20
-  - 최대값: 100
-
-- `offset` (Integer)
-  - 설명: 조회 시작 위치
-  - 기본값: 0
 
 **요청 본문** (선택사항):
 
 ```json
 {
+  "limit": 20,
+  "offset": 0,
   "title": "프로모션",
   "status": ["draft", "scheduled", "sending", "completed"],
   "created_by": "홍길동",
@@ -85,7 +77,14 @@ POST /api/v3/campaigns/search
 ```
 
 **필드 설명**:
+- `limit` (Integer)
+  - 설명: 페이지당 조회할 캠페인 수
+  - 기본값: 20
+  - 최대값: 100
 
+- `offset` (Integer)
+  - 설명: 조회 시작 위치
+  - 기본값: 0
 - `title` (String, 선택)
   - 캠페인 제목으로 검색 (부분 일치)
 
@@ -195,7 +194,7 @@ POST /api/v3/campaigns/search
 **예제 1: 전체 캠페인 조회**
 
 ```bash
-curl -X POST "http://example.com/api/v3/campaigns/search?limit=20&offset=0" \
+curl -X POST "https://example.com/api/v3/campaigns/search?limit=20&offset=0" \
   -H "Content-Type: application/json" \
   -H "X-API-KEY: your_api_key_here"
 ```
@@ -203,7 +202,7 @@ curl -X POST "http://example.com/api/v3/campaigns/search?limit=20&offset=0" \
 **예제 2: 완료된 캠페인만 조회**
 
 ```bash
-curl -X POST "http://example.com/api/v3/campaigns/search?limit=10" \
+curl -X POST "https://example.com/api/v3/campaigns/search?limit=10" \
   -H "Content-Type: application/json" \
   -H "X-API-KEY: your_api_key_here" \
   -d '{
@@ -216,7 +215,7 @@ curl -X POST "http://example.com/api/v3/campaigns/search?limit=10" \
 **예제 3: 특정 작성자의 캠페인 검색**
 
 ```bash
-curl -X POST "http://example.com/api/v3/campaigns/search" \
+curl -X POST "https://example.com/api/v3/campaigns/search" \
   -H "Content-Type: application/json" \
   -H "X-API-KEY: your_api_key_here" \
   -d '{
@@ -339,7 +338,7 @@ POST /api/v3/campaigns/{id}/stats
 #### 사용 예제
 
 ```bash
-curl -X POST "http://example.com/api/v3/campaigns/12345/stats" \
+curl -X POST "https://example.com/api/v3/campaigns/12345/stats" \
   -H "X-API-KEY: your_api_key_here"
 ```
 
@@ -477,7 +476,7 @@ POST /api/v3/campaigns/{id}/recipients
 **예제 1: 전체 수신자 조회**
 
 ```bash
-curl -X POST "http://example.com/api/v3/campaigns/12345/recipients" \
+curl -X POST "httpss://example.com/api/v3/campaigns/12345/recipients" \
   -H "Content-Type: application/json" \
   -H "X-API-KEY: your_api_key_here"
 ```
@@ -485,7 +484,7 @@ curl -X POST "http://example.com/api/v3/campaigns/12345/recipients" \
 **예제 2: 실패한 수신자만 조회**
 
 ```bash
-curl -X POST "http://example.com/api/v3/campaigns/12345/recipients" \
+curl -X POST "httpss://example.com/api/v3/campaigns/12345/recipients" \
   -H "Content-Type: application/json" \
   -H "X-API-KEY: your_api_key_here" \
   -d '{
@@ -498,7 +497,7 @@ curl -X POST "http://example.com/api/v3/campaigns/12345/recipients" \
 **예제 3: 오픈한 수신자 조회**
 
 ```bash
-curl -X POST "http://example.com/api/v3/campaigns/12345/recipients" \
+curl -X POST "https://example.com/api/v3/campaigns/12345/recipients" \
   -H "Content-Type: application/json" \
   -H "X-API-KEY: your_api_key_here" \
   -d '{
@@ -526,7 +525,7 @@ curl -X POST "http://example.com/api/v3/campaigns/12345/recipients" \
 - `M001` - 캠페인을 찾을 수 없습니다
 
 **405 - Method Not Allowed**
-- `C002` - 허용되지 않은 HTTP 메서드입니다
+- `C002` - 허용되지 않은 https 메서드입니다
 
 **500 - Internal Server Error**
 - `C003` - 서버 내부 오류가 발생했습니다
@@ -550,38 +549,11 @@ curl -X POST "http://example.com/api/v3/campaigns/12345/recipients" \
 ```
 
 **필드 설명**:
-- `status` - HTTP 상태 코드
+- `status` - https 상태 코드
 - `code` - 애플리케이션 에러 코드
 - `message` - 에러 메시지
 - `errors` - 필드별 상세 에러 (검증 실패 시에만 포함)
 
----
-
-## 📄 페이지네이션
-
-리스트 조회 API는 페이지네이션을 지원합니다.
-
-**파라미터**:
-- `limit` - 페이지당 항목 수
-  - 기본값: 20
-  - 최대값: 100 (캠페인 검색), 1000 (수신자 조회)
-
-- `offset` - 시작 위치
-  - 기본값: 0
-  - 0부터 시작 (첫 번째 항목 = 0)
-
-**예제**:
-
-```
-# 첫 페이지 (1-20번째 항목)
-?limit=20&offset=0
-
-# 두 번째 페이지 (21-40번째 항목)
-?limit=20&offset=20
-
-# 세 번째 페이지 (41-60번째 항목)
-?limit=20&offset=40
-```
 
 ---
 
