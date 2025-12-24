@@ -194,21 +194,26 @@ POST /api/v3/campaigns/search
 **예제 1: 전체 캠페인 조회**
 
 ```bash
-curl -X POST "https://example.com/api/v3/campaigns/search?limit=20&offset=0" \
+curl -X POST "https://example.com/api/v3/campaigns/search" \
   -H "Content-Type: application/json" \
-  -H "X-API-KEY: your_api_key_here"
+  -H "X-API-KEY: your_api_key_here" \
+  -d '{
+    "limit": 20,
+    "offset": 0
+  }'
 ```
 
 **예제 2: 완료된 캠페인만 조회**
 
 ```bash
-curl -X POST "https://example.com/api/v3/campaigns/search?limit=10" \
+curl -X POST "https://example.com/api/v3/campaigns/search" \
   -H "Content-Type: application/json" \
   -H "X-API-KEY: your_api_key_here" \
   -d '{
     "status": ["completed"],
     "created_at_start": "202501010000",
-    "created_at_end": "202501312359"
+    "created_at_end": "202501312359",
+    "limit": 10
   }'
 ```
 
