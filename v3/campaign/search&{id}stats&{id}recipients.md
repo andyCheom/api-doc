@@ -28,8 +28,9 @@ X-API-KEY: {your_api_key}
 ```json
 {
   "status": 400,
-  "code": "A004",
-  "message": "API 키가 입력되지 않았습니다."
+  "code": "MISSING_API_KEY",
+  "message": "API 키가 입력되지 않았습니다.",
+  "errors": null
 }
 ```
 
@@ -37,8 +38,9 @@ X-API-KEY: {your_api_key}
 ```json
 {
   "status": 401,
-  "code": "A003",
-  "message": "유효하지 않은 API 키입니다."
+  "code": "INVALID_API_KEY",
+  "message": "유효하지 않은 API 키입니다.",
+  "errors": null
 }
 ```
 
@@ -471,8 +473,9 @@ POST /api/v3/campaigns/{id}/recipients
 ```json
 {
   "status": 404,
-  "code": "M001",
-  "message": "캠페인을 찾을 수 없습니다."
+  "code": "CAMPAIGN_NOT_FOUND",
+  "message": "캠페인을 찾을 수 없습니다.",
+  "errors": null
 }
 ```
 
@@ -514,27 +517,25 @@ curl -X POST "https://example.com/api/v3/campaigns/12345/recipients" \
 
 ## ⚠️ 에러 코드
 
-### 공통 에러 코드 목록
 
-**400 - Bad Request**
-- `C001` - 입력값이 올바르지 않습니다
-- `A004` - API 키가 입력되지 않았습니다
+### ⚠️ 공통 에러 코드 목록
 
-**401 - Unauthorized**
-- `A003` - 유효하지 않은 API 키입니다
-
-**403 - Forbidden**
-- `C004` - 접근이 거부되었습니다
-
-**404 - Not Found**
-- `M001` - 캠페인을 찾을 수 없습니다
-
-**405 - Method Not Allowed**
-- `C002` - 허용되지 않은 https 메서드입니다
-
-**500 - Internal Server Error**
-- `C003` - 서버 내부 오류가 발생했습니다
-
+| HTTP Status | Code (JSON 응답 필드) | Message (설명) |
+| :--- | :--- | :--- |
+| **400** | `INVALID_INPUT_VALUE` | 입력값 검증에 실패했습니다. |
+| **400** | `MISSING_REQUEST_BODY` | 요청 본문이 필요합니다. |
+| **400** | `INVALID_JSON_FORMAT` | JSON 형식이 올바르지 않습니다. |
+| **400** | `MISSING_API_KEY` | API 키가 입력되지 않았습니다. |
+| **401** | `AUTHENTICATION_FAILED` | 인증에 실패했습니다. |
+| **401** | `UNAUTHORIZED` | 인증이 필요합니다. |
+| **401** | `INVALID_API_KEY` | 유효하지 않은 API 키입니다. |
+| **403** | `ACCESS_DENIED` | 접근이 거부되었습니다. |
+| **403** | `FORBIDDEN` | 권한이 없습니다. |
+| **403** | `PERMISSION_DENIED` | 해당 리소스에 대한 권한이 없습니다. |
+| **404** | `CAMPAIGN_NOT_FOUND` | 캠페인을 찾을 수 없습니다. |
+| **405** | `METHOD_NOT_ALLOWED` | 허용되지 않은 HTTP 메서드입니다. |
+| **409** | `ILLEGAL_STATE` | 현재 상태에서는 해당 기능을 수행할 수 없습니다. |
+| **500** | `INTERNAL_SERVER_ERROR` | 서버 내부 오류가 발생했습니다. |
 ### 에러 응답 형식
 
 모든 에러는 다음 형식으로 반환됩니다:
@@ -542,12 +543,12 @@ curl -X POST "https://example.com/api/v3/campaigns/12345/recipients" \
 ```json
 {
   "status": 400,
-  "code": "C001",
-  "message": "입력값이 올바르지 않습니다.",
+  "code": "INVALID_INPUT_VALUE",
+  "message": "입력값 검증에 실패했습니다.",
   "errors": [
     {
       "field": "status",
-      "message": "입력값 'invalid'은(는) 허용되지 않습니다. 허용된 값: [draft, scheduled, sending, completed, paused, failed]"
+      "reason": "입력값 'invalid'은(는) 허용되지 않습니다."
     }
   ]
 }
