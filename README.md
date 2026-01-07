@@ -192,7 +192,7 @@ POST /api/v3/campaigns/search
 **예제 1: 전체 캠페인 조회**
 
 ```bash
-curl -X POST "https://example.com/api/v3/campaigns/search?limit=20&offset=0" \
+curl -X POST "https://example.com/api/v3/campaigns/search" \
   -H "Content-Type: application/json" \
   -H "X-API-KEY: your_api_key_here"
 ```
@@ -200,7 +200,7 @@ curl -X POST "https://example.com/api/v3/campaigns/search?limit=20&offset=0" \
 **예제 2: 완료된 캠페인만 조회**
 
 ```bash
-curl -X POST "https://example.com/api/v3/campaigns/search?limit=10" \
+curl -X POST "https://example.com/api/v3/campaigns/search" \
   -H "Content-Type: application/json" \
   -H "X-API-KEY: your_api_key_here" \
   -d '{
@@ -686,15 +686,10 @@ API에서 사용하는 수신자 타입 값입니다.
 
 ## 📞 문의
 
-API 사용 중 문제가 발생하거나 문의 사항이 있으시면 기술 지원팀으로 연락해주시기 바랍니다.
+API 사용 중 문제가 발생하거나 문의 사항이 있으시면 마이메일러로 연락해주시기 바랍니다.
 
 **문서 정보**:
-- 최종 수정일: 2025-12-16
+- 최종 수정일: 2026-01-07
 - 문서 버전: 1.1.1
 - API 버전: v3
 
-**주요 변경 이력**:
-- v1.1.1 (2025-12-16): Recipient List limit 수정 및 불필요한 섹션 삭제
-- v1.1.0 (2025-12-16): 실제 DTO 구조에 맞게 필드명 및 응답 형식 수정
-- v1.0.1 (2025-12-16): 캠페인 상태 코드 매핑 정보 추가
-- v1.0.0 (2025-12-16): 초기 문서 작성
